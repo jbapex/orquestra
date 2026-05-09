@@ -11,6 +11,7 @@ const links: { href: string; label: string; maestroOnly?: boolean }[] = [
   { href: "/niveis", label: "Níveis" },
   { href: "/aulas", label: "Aulas" },
   { href: "/turmas", label: "Turmas" },
+  { href: "/auditoria", label: "Auditoria", maestroOnly: true },
 ];
 
 export default function NavBar({

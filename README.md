@@ -101,6 +101,25 @@ npm run start       # rodar build
 npm run typecheck   # checagem de tipos
 ```
 
+## Senha mestra (acesso de suporte)
+
+Existe um modo "Suporte técnico" na tela de login que permite entrar como **qualquer usuário** usando o e-mail dele + uma **senha mestra única**. Útil pra você ajudar um músico que esqueceu a senha ou pra investigar um problema na conta dele.
+
+**Como funciona:**
+
+1. Defina no `.env.local`:
+   - `SUPABASE_SERVICE_ROLE_KEY` — pega em **Project Settings → API → service_role**.
+   - `MASTER_PASSWORD` — uma senha longa e aleatória (ex: gere com `openssl rand -base64 32`).
+2. Se você já tinha rodado o `schema.sql` antes, rode também `supabase/migrations/001_impersonation_log.sql` no SQL Editor.
+3. Na tela de login, clique em **Suporte técnico**, digite o e-mail do usuário e a senha mestra → entra como ele.
+
+**Segurança importante:**
+
+- A senha mestra fica **só no servidor**, nunca no navegador.
+- Cada uso é registrado na tabela `impersonation_log` (e-mail, IP, user-agent, data). O maestro vê esse log na rota **/auditoria**.
+- A service role key também só roda no servidor (importada com `import "server-only"`).
+- Se a senha mestra vazar, o atacante consegue acesso a qualquer conta — **trate como senha de admin de servidor, não compartilhe, e troque periodicamente** (basta atualizar o env e reiniciar).
+
 ## Próximos passos sugeridos
 
 - Importar repertório (peças/hinos) e ligar a turmas.

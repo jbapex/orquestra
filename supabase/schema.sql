@@ -100,6 +100,16 @@ create table if not exists public.assignments (
   unique (musico_id, lesson_id)
 );
 
+-- ---------- IMPERSONATION LOG (auditoria de senha mestra) ----------
+create table if not exists public.impersonation_log (
+  id uuid primary key default gen_random_uuid(),
+  target_email text not null,
+  target_user_id uuid,
+  used_at timestamptz not null default now(),
+  ip text,
+  user_agent text
+);
+
 -- ---------- HELPERS ----------
 create or replace function public.is_maestro(uid uuid)
 returns boolean
@@ -143,6 +153,7 @@ alter table public.musician_levels  enable row level security;
 alter table public.classes          enable row level security;
 alter table public.attendance       enable row level security;
 alter table public.assignments      enable row level security;
+alter table public.impersonation_log enable row level security;
 
 -- profiles
 drop policy if exists "profiles_select_self_or_maestro" on public.profiles;
@@ -204,6 +215,11 @@ create policy "assignments_write_maestro" on public.assignments
 drop policy if exists "assignments_update_self" on public.assignments;
 create policy "assignments_update_self" on public.assignments
   for update using (musico_id = auth.uid()) with check (musico_id = auth.uid());
+
+-- impersonation_log: só o maestro vê. Inserts vêm do servidor com service_role (ignora RLS).
+drop policy if exists "imp_log_select_maestro" on public.impersonation_log;
+create policy "imp_log_select_maestro" on public.impersonation_log
+  for select using (public.is_maestro(auth.uid()));
 
 -- ---------- SEED inicial (níveis e assuntos comuns) ----------
 insert into public.levels (name, position, description) values
